@@ -1,39 +1,128 @@
 # Deputy Workforce Operations MCP
 
-A read-only Model Context Protocol server that turns Deputy workforce data into five grounded,
+A read-only Model Context Protocol server that turns Deputy workforce records into five grounded,
 operational workflows for AI assistants.
 
-This is delivery 001 from **MCP Maker**: Hyperdrift's service for turning a SaaS API into a secure,
-production-ready AI integration.
+## What a Deputy manager can ask
 
-## What it will answer
+- “Where are the coverage gaps from 20 to 26 July, using a minimum of two people?”
+- “Which combined completed and rostered workloads cross our 40-hour planning threshold?”
+- “Show timesheet exceptions above a 15-minute tolerance.”
+- “Which rosters overlap recorded unavailability or approved leave?”
+- “Summarise staffing by location and day for this week.”
 
-- Where are the upcoming coverage gaps?
-- Which scheduled workloads cross a configured overtime threshold?
-- Which timesheets need operational attention?
-- Where does scheduled work conflict with recorded availability?
-- What is the staffing picture for a location and period?
+The tools answer those questions directly instead of exposing Deputy's endpoint catalogue.
 
-Every result will identify its query period, source record identifiers, and the rule or threshold
-used. The server will not create or change shifts, timesheets, leave, payroll, or employee data.
+## Representative result
 
-## Delivery shape
+```json
+{
+  "period": {
+    "start": "2026-07-20T00:00:00.000Z",
+    "end": "2026-07-27T00:00:00.000Z",
+    "timezone": "Europe/London"
+  },
+  "findings": [
+    {
+      "kind": "recorded_unavailability_conflict",
+      "summary": "This roster overlaps a recorded unavailability window.",
+      "sources": [
+        { "resource": "Roster", "id": 1002 },
+        { "resource": "EmployeeAvailability", "id": 4001 }
+      ],
+      "rule": "roster interval overlaps recorded unavailability"
+    }
+  ],
+  "limits": []
+}
+```
 
-- Curated workflows instead of an endpoint catalogue
-- Customer-owned Deputy credentials
-- Local stdio and authenticated remote streamable-HTTP transports
-- Single-tenant deployment boundary
-- Synthetic fixture mode for evaluation without workforce data
+Every finding names its period, source record identifiers, and the rule or threshold that produced
+it. Empty data gives a confidence limit rather than a false all-clear.
+
+## Safety and data handling
+
+- Every tool is read-only, idempotent, and non-destructive.
+- The server never creates or changes shifts, timesheets, leave, payroll, or employee data.
+- Workload thresholds are operational planning signals, not payroll, employment, or legal advice.
+- Telemetry excludes tool arguments, employee and location IDs, dates, result content, and tokens.
+- V1 is single-tenant by deployment: one Deputy installation and one MCP bearer token per instance.
+
+See [SECURITY.md](SECURITY.md) and [PRIVACY.md](PRIVACY.md) for the complete contracts.
+
+## Local installation
+
+Node.js 22 and pnpm are required.
+
+```bash
+git clone https://github.com/hyperdrift-io/deputy-workforce-mcp.git
+cd deputy-workforce-mcp
+pnpm install
+pnpm build
+DEPUTY_MODE=fixture node dist/stdio.js
+```
+
+Fixture mode contains fictional `Worker 01`-style records and is safe for evaluation. To connect a
+Deputy installation, copy `.env.example` to `.env.local`, choose `DEPUTY_MODE=live`, and provide a
+customer-owned base URL and OAuth access token. Live resource shapes still require the first
+sandbox verification recorded in [docs/DEPUTY_API.md](docs/DEPUTY_API.md).
+
+Example client configuration:
+
+```json
+{
+  "mcpServers": {
+    "deputy-workforce": {
+      "command": "node",
+      "args": ["/absolute/path/to/deputy-workforce-mcp/dist/stdio.js"],
+      "env": { "DEPUTY_MODE": "fixture" }
+    }
+  }
+}
+```
+
+## Remote deployment
+
+The same five tools can run over authenticated streamable HTTP. Remote mode requires an MCP bearer
+token of at least 32 bytes, authenticates before parsing requests, limits bodies to 1 MiB, and uses
+bounded in-memory rate protection.
+
+```bash
+DEPUTY_MODE=fixture \
+MCP_BEARER_TOKEN="replace-with-at-least-32-random-bytes" \
+PORT=3013 \
+pnpm start
+```
+
+- Health: `GET /health`
+- MCP: authenticated `POST /mcp`
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) before operating a remote instance.
+
+## Tool reference
+
+The server registers exactly five tools:
+
+- `find_coverage_gaps`
+- `flag_overtime_risk`
+- `list_timesheet_exceptions`
+- `find_availability_conflicts`
+- `summarise_staffing`
+
+Inputs, rules, and output limits are documented in [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Status
 
-Foundation and Deputy sandbox validation are in progress. The public API is not stable yet.
+Fixture mode, stdio, and authenticated streamable HTTP are operational. Live Deputy mode remains
+explicitly pending a customer-owned sandbox token and field-shape verification. The public API is
+still in prototype discovery and may evolve from real workflow feedback.
 
-See [MISSION.md](MISSION.md) for product boundaries and [GROWTH.md](GROWTH.md) for the activation
-and commercial handoff contract.
+## Built as MCP Maker delivery 001
 
-## Managed delivery
+Deputy Workforce Operations MCP is the flagship public implementation from
+[MCP Maker](https://hyperdrift.io/services/mcp-maker): Hyperdrift turns established SaaS APIs into
+secure, production-ready AI integrations.
 
-The open-source core is designed to remain useful on its own. MCP Maker offers managed deployment,
-security hardening, custom workflows, and operational support for organisations that want a
-production integration tailored to their environment.
+The open-source core remains useful on its own. MCP Maker offers managed deployment, security
+hardening, custom workflows, and operational support for organisations that want a production
+integration tailored to their environment.
