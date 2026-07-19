@@ -1,8 +1,9 @@
 # Deputy Workforce Operations MCP
 
 This repository is MCP Maker delivery `mcp-maker-001-deputy`. It inherits the Hyperdrift
-workspace operating rules and exists to prove the MCP Maker proposition with a useful,
-production-ready integration.
+workspace operating rules and exists to prove the MCP Maker proposition with useful foundations
+built toward a production-ready delivery standard. Live Deputy integration remains pending
+sandbox and customer workflow verification.
 
 ## Mission alignment
 
@@ -35,4 +36,3 @@ Missing data limits confidence in the result; it is not a user failure.
 
 The open-source core demonstrates MCP Maker's full delivery quality. Managed deployment,
 security hardening, custom workflows, and operational support are the commercial handoff.
-
