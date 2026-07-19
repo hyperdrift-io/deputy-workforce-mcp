@@ -26,11 +26,20 @@ function parsePort(value: string | undefined): number {
   return port;
 }
 
+function parseDeputyMode(value: string | undefined): DeputyMode {
+  if (value === undefined || value === "fixture") return "fixture";
+  if (value === "live") return "live";
+
+  throw new Error(
+    "DEPUTY_MODE must be either fixture or live. Use fixture for local sample data or live with Deputy credentials.",
+  );
+}
+
 export function loadConfig(
   env: NodeJS.ProcessEnv = process.env,
   transport: TransportKind = "stdio",
 ): Config {
-  const deputyMode = env.DEPUTY_MODE === "live" ? "live" : "fixture";
+  const deputyMode = parseDeputyMode(env.DEPUTY_MODE);
   const deputyBaseUrl = optionalValue(env.DEPUTY_BASE_URL)?.replace(/\/$/, "");
   const deputyAccessToken = optionalValue(env.DEPUTY_ACCESS_TOKEN);
   const mcpBearerToken = optionalValue(env.MCP_BEARER_TOKEN);
