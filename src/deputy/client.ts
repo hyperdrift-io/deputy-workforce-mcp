@@ -9,6 +9,19 @@ export class DeputyGatewayError extends Error {
     this.name = "DeputyGatewayError";
   }
 }
+
+export class DeputyPartialResultError extends DeputyGatewayError {
+  constructor(
+    readonly resource: string,
+    readonly recordCount: number,
+  ) {
+    super(
+      `Deputy returned ${recordCount} ${resource} records across the maximum ${MAX_PAGES} pages. `
+        + "The read may be partial, so no result was returned as complete. Narrow the date range or location selection.",
+    );
+    this.name = "DeputyPartialResultError";
+  }
+}
 export type DeputyRecord = Record<string, unknown>;
 export type DeputyQuery = Record<string, unknown>;
 
@@ -18,7 +31,7 @@ function retryDelay(response: Response): number {
   const seconds = Number(header);
   if (Number.isFinite(seconds)) return Math.min(Math.max(seconds * 1_000, 0), 10_000);
   const dateDelay = Date.parse(header) - Date.now();
-  return Math.min(Math.max(dateDelay, 0), 10_000);
+  return Number.isFinite(dateDelay) ? Math.min(Math.max(dateDelay, 0), 10_000) : 500;
 }
 
 function wait(milliseconds: number): Promise<void> {
@@ -74,9 +87,7 @@ export class DeputyClient {
       if (pageRecords.length < MAX_PAGE_SIZE) return records;
     }
 
-    throw new DeputyGatewayError(
-      `Deputy returned more than ${MAX_PAGE_SIZE * MAX_PAGES} ${resource} records. Narrow the date range or location selection.`,
-    );
+    throw new DeputyPartialResultError(resource, records.length);
   }
 
   private async requestPage(resource: string, body: DeputyQuery): Promise<DeputyRecord[]> {
@@ -103,11 +114,22 @@ export class DeputyClient {
       }
 
       if (response.ok) {
-        const payload: unknown = await response.json();
-        if (!Array.isArray(payload)) {
+        let payload: unknown;
+        try {
+          payload = await response.json();
+        } catch (error) {
+          if (error instanceof DOMException && (error.name === "TimeoutError" || error.name === "AbortError")) {
+            throw new DeputyGatewayError(
+              "Deputy did not respond within 10 seconds. Try a narrower request or retry shortly.",
+            );
+          }
           throw new DeputyGatewayError("Deputy returned an unexpected read response shape.");
         }
-        return payload.filter((item): item is DeputyRecord => typeof item === "object" && item !== null);
+        if (!Array.isArray(payload)
+          || payload.some((item) => typeof item !== "object" || item === null || Array.isArray(item))) {
+          throw new DeputyGatewayError("Deputy returned an unexpected read response shape.");
+        }
+        return payload as DeputyRecord[];
       }
 
       const retryable = response.status === 429 || response.status >= 500;
