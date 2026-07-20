@@ -33,6 +33,13 @@ function isoFromEpoch(record: DeputyRecord, field: string): string | undefined {
   return value === undefined ? undefined : new Date(value * 1_000).toISOString();
 }
 
+function isoFromString(record: DeputyRecord, field: string): string | undefined {
+  const value = stringValue(record, field);
+  if (!value) return undefined;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : undefined;
+}
+
 function requiredNumber(record: DeputyRecord, field: string, resource: string): number {
   const value = numberValue(record, field);
   if (value === undefined) throw new DeputyGatewayError(`${resource} data is missing the documented ${field} field.`);
@@ -48,6 +55,37 @@ function dateSearch(field: string, range: DateRange): Record<string, unknown> {
   };
 }
 
+function overlapDateSearch(startField: string, endField: string, range: DateRange): Record<string, unknown> {
+  return {
+    search: {
+      s1: { field: startField, data: range.end.slice(0, 10), type: "lt" },
+      s2: { field: endField, data: range.start.slice(0, 10), type: "ge" },
+    },
+  };
+}
+
+function joinedLocationId(record: DeputyRecord, resource: "Roster" | "Timesheet"): number {
+  const info = record.OperationalUnitInfo;
+  if (typeof info !== "object" || info === null || Array.isArray(info)) {
+    throw new DeputyGatewayError(
+      `${resource} data could not be linked to a location because Deputy did not return `
+        + "OperationalUnitInfo. Confirm the OperationalUnitObject join is available, then retry.",
+    );
+  }
+  const locationId = numberValue(info as DeputyRecord, "Company");
+  if (locationId === undefined) {
+    throw new DeputyGatewayError(
+      `${resource} data could not be linked to a location because OperationalUnitInfo.Company is missing. `
+        + "Confirm the operational unit has a Company assignment, then retry.",
+    );
+  }
+  return locationId;
+}
+
+function overlaps(start: string, end: string, range: DateRange): boolean {
+  return Date.parse(start) < Date.parse(range.end) && Date.parse(end) >= Date.parse(range.start);
+}
+
 function locationFilter<T extends { locationId: number }>(records: T[], locationIds?: number[]): T[] {
   return locationIds?.length ? records.filter((record) => locationIds.includes(record.locationId)) : records;
 }
@@ -60,14 +98,13 @@ class LiveDeputyGateway implements DeputyGateway {
   constructor(private readonly client: DeputyClient) {}
 
   async listRosters(range: DateRange, locationIds?: number[]): Promise<RosterRecord[]> {
-    const rows = await this.client.queryResource("Roster", dateSearch("Date", range));
+    const rows = await this.client.queryResource("Roster", {
+      ...dateSearch("Date", range),
+      join: ["OperationalUnitObject"],
+    });
     return locationFilter(
       rows.map((row) => {
-        const info = typeof row.OperationalUnitInfo === "object" && row.OperationalUnitInfo
-          ? (row.OperationalUnitInfo as DeputyRecord)
-          : undefined;
         const operationalUnitId = requiredNumber(row, "OperationalUnit", "Roster");
-        const locationId = info ? numberValue(info, "Company") ?? operationalUnitId : operationalUnitId;
         const start = isoFromEpoch(row, "StartTime");
         const end = isoFromEpoch(row, "EndTime");
         if (!start || !end) throw new DeputyGatewayError("Roster timestamps do not match the documented epoch format.");
@@ -76,7 +113,7 @@ class LiveDeputyGateway implements DeputyGateway {
           id: requiredNumber(row, "Id", "Roster"),
           start,
           end,
-          locationId,
+          locationId: joinedLocationId(row, "Roster"),
           operationalUnitId,
           ...(employeeId ? { employeeId } : {}),
           published: booleanValue(row, "Published"),
@@ -88,7 +125,10 @@ class LiveDeputyGateway implements DeputyGateway {
   }
 
   async listTimesheets(range: DateRange, locationIds?: number[]): Promise<TimesheetRecord[]> {
-    const rows = await this.client.queryResource("Timesheet", dateSearch("Date", range));
+    const rows = await this.client.queryResource("Timesheet", {
+      ...dateSearch("Date", range),
+      join: ["OperationalUnitObject"],
+    });
     return locationFilter(
       rows.map((row) => {
         const start = isoFromEpoch(row, "StartTime");
@@ -102,12 +142,12 @@ class LiveDeputyGateway implements DeputyGateway {
           end,
           totalHours: numberValue(row, "TotalTime") ?? (Date.parse(end) - Date.parse(start)) / 3_600_000,
           employeeId: requiredNumber(row, "Employee", "Timesheet"),
-          locationId: operationalUnitId,
+          locationId: joinedLocationId(row, "Timesheet"),
           operationalUnitId,
           ...(rosterId ? { rosterId } : {}),
           timeApproved: booleanValue(row, "TimeApproved"),
           validationFlag: numberValue(row, "ValidationFlag") ?? 0,
-          inProgress: booleanValue(row, "isInProgress"),
+          inProgress: booleanValue(row, "IsInProgress"),
           discarded: booleanValue(row, "Discarded"),
         };
       }),
@@ -132,23 +172,49 @@ class LiveDeputyGateway implements DeputyGateway {
   }
 
   async listLeave(range: DateRange, employeeIds?: number[]): Promise<LeaveRecord[]> {
-    const rows = await this.client.queryResource("Leave", dateSearch("DateStart", range));
+    const rows = await this.client.queryResource("Leave", overlapDateSearch("DateStart", "DateEnd", range));
     return employeeFilter(
-      rows.map((row) => ({
-        id: requiredNumber(row, "Id", "Leave"),
-        employeeId: requiredNumber(row, "Employee", "Leave"),
-        locationId: requiredNumber(row, "Company", "Leave"),
-        start: stringValue(row, "DateStart") ?? "",
-        end: stringValue(row, "DateEnd") ?? "",
-        status: requiredNumber(row, "Status", "Leave"),
-      })),
+      rows.map((row) => {
+        const start = isoFromEpoch(row, "Start") ?? isoFromString(row, "DateStart");
+        const end = isoFromEpoch(row, "End") ?? isoFromString(row, "DateEnd");
+        if (!start || !end) {
+          throw new DeputyGatewayError(
+            "Leave data is missing a usable Start/End or DateStart/DateEnd interval. Confirm the Deputy record, then retry.",
+          );
+        }
+        return {
+          id: requiredNumber(row, "Id", "Leave"),
+          employeeId: requiredNumber(row, "Employee", "Leave"),
+          locationId: requiredNumber(row, "Company", "Leave"),
+          start,
+          end,
+          status: requiredNumber(row, "Status", "Leave"),
+        };
+      }).filter((record) => overlaps(record.start, record.end, range)),
       employeeIds,
     );
   }
 
-  async listAvailability(_range: DateRange, _employeeIds?: number[]): Promise<AvailabilityRecord[]> {
-    throw new DeputyGatewayError(
-      "Availability reads need one sandbox field-shape check before live use. Fixture mode remains fully available.",
+  async listAvailability(range: DateRange, employeeIds?: number[]): Promise<AvailabilityRecord[]> {
+    const rows = await this.client.queryResource("EmployeeAvailability", dateSearch("Date", range));
+    return employeeFilter(
+      rows.map((row) => {
+        const start = isoFromEpoch(row, "StartTime");
+        const end = isoFromEpoch(row, "EndTime");
+        if (!start || !end) {
+          throw new DeputyGatewayError(
+            "EmployeeAvailability timestamps do not match the documented epoch format. Confirm the Deputy record, then retry.",
+          );
+        }
+        return {
+          id: requiredNumber(row, "Id", "EmployeeAvailability"),
+          employeeId: requiredNumber(row, "Employee", "EmployeeAvailability"),
+          start,
+          end,
+          unavailable: true,
+        };
+      }).filter((record) => overlaps(record.start, record.end, range)),
+      employeeIds,
     );
   }
 
