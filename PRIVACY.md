@@ -17,7 +17,7 @@ Labour cost is omitted until a customer explicitly approves a sandbox-verified a
 
 Telemetry records only:
 
-- delivery ID and event time;
+- delivery ID;
 - tool name and fixture/live mode;
 - MCP client name and version;
 - duration, success/error outcome, and result count.
