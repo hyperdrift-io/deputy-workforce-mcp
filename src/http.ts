@@ -23,12 +23,6 @@ function requestUrl(request: IncomingMessage): URL {
 }
 
 async function handleMcp(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  if (request.method !== "POST") {
-    response.setHeader("Allow", "POST");
-    jsonResponse(response, 405, { error: "method_not_allowed" });
-    return;
-  }
-
   const auth = authenticateBearer(request.headers, config.mcpBearerToken!);
   if (!auth.authenticated) {
     response.setHeader("WWW-Authenticate", "Bearer");
@@ -40,7 +34,11 @@ async function handleMcp(request: IncomingMessage, response: ServerResponse): Pr
     jsonResponse(response, 429, { error: "rate_limited" });
     return;
   }
-
+  if (request.method !== "POST") {
+    response.setHeader("Allow", "POST");
+    jsonResponse(response, 405, { error: "method_not_allowed" });
+    return;
+  }
   try {
     const body = await readBoundedBody(request);
     const webRequest = new Request(requestUrl(request), {
