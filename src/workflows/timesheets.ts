@@ -16,18 +16,41 @@ export interface TimesheetExceptionReport extends ToolResult<TimesheetExceptionF
   toleranceMinutes: number;
 }
 
-function matchingTimesheet(
-  roster: RosterRecord,
+function matchTimesheets(
+  rosters: Array<RosterRecord & { employeeId: number }>,
   timesheets: TimesheetRecord[],
-  usedTimesheetIds: Set<number>,
   timezone: string,
-): TimesheetRecord | undefined {
-  return timesheets.find((sheet) => sheet.rosterId === roster.id)
-    ?? timesheets
+): Map<number, TimesheetRecord> {
+  const matches = new Map<number, TimesheetRecord>();
+  const usedTimesheetIds = new Set<number>();
+
+  // Preserve explicit Deputy links before considering any inferred same-day match.
+  for (const roster of rosters) {
+    const exact = timesheets.find(
+      (sheet) => !usedTimesheetIds.has(sheet.id) && sheet.rosterId === roster.id,
+    );
+    if (!exact) continue;
+    matches.set(roster.id, exact);
+    usedTimesheetIds.add(exact.id);
+  }
+
+  for (const roster of rosters) {
+    if (matches.has(roster.id)) continue;
+    const fallback = timesheets
       .filter((sheet) => !usedTimesheetIds.has(sheet.id)
+        && sheet.rosterId === undefined
         && sheet.employeeId === roster.employeeId
         && localDay(sheet.start, timezone) === localDay(roster.start, timezone))
-      .sort((first, second) => minutesBetween(roster.start, first.start) - minutesBetween(roster.start, second.start))[0];
+      .sort((first, second) => {
+        const distance = minutesBetween(roster.start, first.start) - minutesBetween(roster.start, second.start);
+        return distance || first.id - second.id;
+      })[0];
+    if (!fallback) continue;
+    matches.set(roster.id, fallback);
+    usedTimesheetIds.add(fallback.id);
+  }
+
+  return matches;
 }
 
 export async function listTimesheetExceptions(
@@ -38,13 +61,13 @@ export async function listTimesheetExceptions(
   const { rosters, timesheets } = await workforceRecords(gateway, input);
   const usableTimesheets = timesheets.filter((sheet) => !sheet.discarded);
   const findings: TimesheetExceptionFinding[] = [];
-  const usedTimesheetIds = new Set<number>();
   const assignedRosters = rosters.filter(
     (record): record is RosterRecord & { employeeId: number } => record.employeeId !== undefined,
   );
+  const matchedTimesheets = matchTimesheets(assignedRosters, usableTimesheets, input.range.timezone);
 
   for (const roster of assignedRosters) {
-    const sheet = matchingTimesheet(roster, usableTimesheets, usedTimesheetIds, input.range.timezone);
+    const sheet = matchedTimesheets.get(roster.id);
     if (!sheet) {
       findings.push({
         kind: "missing_timesheet",
@@ -59,7 +82,6 @@ export async function listTimesheetExceptions(
       });
       continue;
     }
-    usedTimesheetIds.add(sheet.id);
     const sourcePair = [
       { resource: "Roster" as const, id: roster.id },
       { resource: "Timesheet" as const, id: sheet.id },

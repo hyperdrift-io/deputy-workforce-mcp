@@ -67,9 +67,10 @@ export async function findCoverageGaps(
       end: roster.end,
       locationId: roster.locationId,
     }));
-  const thresholdFindings = input.minimumPeople ? shortfalls(rosters, input.minimumPeople) : [];
+  const hasMinimumPeople = input.minimumPeople !== undefined;
+  const thresholdFindings = input.minimumPeople === undefined ? [] : shortfalls(rosters, input.minimumPeople);
   const findings = [...unassigned, ...thresholdFindings];
-  const limits = input.minimumPeople
+  const limits = hasMinimumPeople
     ? []
     : ["No minimum staffing requirement was supplied, so only unassigned shifts were evaluated."];
   const summary = findings.length
