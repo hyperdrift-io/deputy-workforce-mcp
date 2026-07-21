@@ -12,7 +12,6 @@ interface TelemetryEvent {
 }
 export function emitTelemetry(event: TelemetryEvent): void {
   process.stderr.write(`${JSON.stringify({
-    occurred_at: new Date().toISOString(),
     delivery_id: DELIVERY_ID,
     ...event,
   })}\n`);
