@@ -9,7 +9,7 @@ import { findCoverageGaps } from "../workflows/coverage.js";
 import { flagOvertimeRisk } from "../workflows/overtime.js";
 import { summariseStaffing } from "../workflows/staffing.js";
 import { listTimesheetExceptions } from "../workflows/timesheets.js";
-import { enablingError, successfulResult } from "./results.js";
+import { enablingError, EnablingToolError, successfulResult } from "./results.js";
 import { emitTelemetry } from "./telemetry.js";
 
 export interface McpContext {
@@ -31,20 +31,28 @@ const commonInput = {
   location_ids: z.array(z.number().int().positive()).max(50).optional(),
 };
 
+function isoCalendarDate(value: string): Date {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    throw new EnablingToolError("Use real calendar dates in YYYY-MM-DD format.");
+  }
+  return date;
+}
+
 function dateRange(startDate: string, endDate: string, timezone: string): DateRange {
   try {
     new Intl.DateTimeFormat("en", { timeZone: timezone }).format();
   } catch {
-    throw new Error("Use a valid IANA timezone such as Europe/London or Australia/Sydney.");
+    throw new EnablingToolError("Use a valid IANA timezone such as Europe/London or Australia/Sydney.");
   }
-  const start = new Date(`${startDate}T00:00:00Z`);
-  const inclusiveEnd = new Date(`${endDate}T00:00:00Z`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(inclusiveEnd.getTime()) || inclusiveEnd < start) {
-    throw new Error("Choose an end date on or after the start date.");
+  const start = isoCalendarDate(startDate);
+  const inclusiveEnd = isoCalendarDate(endDate);
+  if (inclusiveEnd < start) {
+    throw new EnablingToolError("Choose an end date on or after the start date.");
   }
   const end = new Date(inclusiveEnd.getTime() + 86_400_000);
   if ((end.getTime() - start.getTime()) / 86_400_000 > 31) {
-    throw new Error("Choose a period of 31 days or fewer so the Deputy read stays bounded.");
+    throw new EnablingToolError("Choose a period of 31 days or fewer so the Deputy read stays bounded.");
   }
   return { start: start.toISOString(), end: end.toISOString(), timezone };
 }
