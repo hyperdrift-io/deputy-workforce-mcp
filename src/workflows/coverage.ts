@@ -11,6 +11,10 @@ export interface CoverageFinding extends OperationalFinding {
   minimumPeople?: number;
 }
 
+export interface CoverageReport extends ToolResult<CoverageFinding> {
+  minimumPeople?: number;
+}
+
 function shortfalls(rosters: RosterRecord[], minimumPeople: number): CoverageFinding[] {
   const findings: CoverageFinding[] = [];
   const locationIds = [...new Set(rosters.map((roster) => roster.locationId))];
@@ -27,7 +31,9 @@ function shortfalls(rosters: RosterRecord[], minimumPeople: number): CoverageFin
         (roster) => Date.parse(roster.start) < Date.parse(end) && Date.parse(roster.end) > Date.parse(start),
       );
       if (!active.length) continue;
-      const assigned = active.filter((roster) => roster.employeeId !== undefined).length;
+      const assigned = new Set(
+        active.flatMap((roster) => (roster.employeeId === undefined ? [] : [roster.employeeId])),
+      ).size;
       if (assigned >= minimumPeople) continue;
       findings.push({
         kind: "minimum_staffing_shortfall",
@@ -48,7 +54,7 @@ function shortfalls(rosters: RosterRecord[], minimumPeople: number): CoverageFin
 export async function findCoverageGaps(
   input: CoverageInput,
   gateway: DeputyGateway,
-): Promise<ToolResult<CoverageFinding>> {
+): Promise<CoverageReport> {
   const rosters = await gateway.listRosters(input.range, input.locationIds);
   const unassigned: CoverageFinding[] = rosters
     .filter((roster) => roster.open || roster.employeeId === undefined)
@@ -71,5 +77,8 @@ export async function findCoverageGaps(
     : rosters.length
       ? "No coverage gap matched the supplied rules for this period."
       : "No roster records were available for this period, so coverage could not be evaluated.";
-  return report(input.range, findings, summary, limits);
+  return {
+    ...report(input.range, findings, summary, limits),
+    ...(input.minimumPeople === undefined ? {} : { minimumPeople: input.minimumPeople }),
+  };
 }

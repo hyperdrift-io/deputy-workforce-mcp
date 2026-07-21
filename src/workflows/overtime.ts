@@ -13,13 +13,20 @@ export interface OvertimeFinding extends OperationalFinding {
   thresholdHours: number;
 }
 
+export interface OvertimeReport extends ToolResult<OvertimeFinding> {
+  thresholdHours: number;
+}
+
 export async function flagOvertimeRisk(
   input: OvertimeInput,
   gateway: DeputyGateway,
-): Promise<ToolResult<OvertimeFinding>> {
+): Promise<OvertimeReport> {
   const threshold = input.thresholdHours ?? 40;
   const { rosters, timesheets } = await workforceRecords(gateway, input);
-  const completedRosterIds = new Set(timesheets.flatMap((sheet) => (sheet.rosterId ? [sheet.rosterId] : [])));
+  const completedTimesheets = timesheets.filter((sheet) => !sheet.discarded && !sheet.inProgress);
+  const completedRosterIds = new Set(
+    completedTimesheets.flatMap((sheet) => (sheet.rosterId === undefined ? [] : [sheet.rosterId])),
+  );
   const employeeIds = new Set([
     ...rosters.flatMap((roster) => (roster.employeeId ? [roster.employeeId] : [])),
     ...timesheets.map((sheet) => sheet.employeeId),
@@ -27,7 +34,7 @@ export async function flagOvertimeRisk(
   const findings: OvertimeFinding[] = [];
 
   for (const employeeId of employeeIds) {
-    const employeeSheets = timesheets.filter((sheet) => sheet.employeeId === employeeId && !sheet.discarded);
+    const employeeSheets = completedTimesheets.filter((sheet) => sheet.employeeId === employeeId);
     const remainingRosters = rosters.filter(
       (roster) => roster.employeeId === employeeId && !completedRosterIds.has(roster.id),
     );
@@ -59,7 +66,11 @@ export async function flagOvertimeRisk(
     : rosters.length || timesheets.length
       ? `No combined workload crosses the configured ${threshold}-hour operational threshold.`
       : "No roster or timesheet records were available, so workload could not be evaluated.";
-  return report(input.range, findings, summary, [
-    `The ${threshold}-hour threshold is an operational planning rule, not a payroll or legal determination.`,
-  ]);
+  return {
+    ...report(input.range, findings, summary, [
+      `The ${threshold}-hour threshold is an operational planning rule, not a payroll or legal determination.`,
+      "Evaluate one ISO week at a time; this workflow uses exactly the supplied period and does not infer week boundaries.",
+    ]),
+    thresholdHours: threshold,
+  };
 }

@@ -28,7 +28,10 @@ export async function summariseStaffing(
       (roster) => roster.locationId === locationId && localDay(roster.start, input.range.timezone) === day,
     );
     const dayTimesheets = timesheets.filter(
-      (sheet) => sheet.locationId === locationId && localDay(sheet.start, input.range.timezone) === day && !sheet.discarded,
+      (sheet) => sheet.locationId === locationId
+        && localDay(sheet.start, input.range.timezone) === day
+        && !sheet.discarded
+        && !sheet.inProgress,
     );
     const rosteredHours = dayRosters.reduce((total, roster) => total + hoursBetween(roster.start, roster.end), 0);
     const completedHours = dayTimesheets.reduce((total, sheet) => total + sheet.totalHours, 0);
@@ -41,7 +44,7 @@ export async function summariseStaffing(
         ...dayRosters.map((roster) => ({ resource: "Roster" as const, id: roster.id })),
         ...dayTimesheets.map((sheet) => ({ resource: "Timesheet" as const, id: sheet.id })),
       ],
-      rule: "group roster and non-discarded timesheet records by local day and location",
+      rule: "group roster and completed, non-discarded timesheet records by local day and location",
       locationId,
       day,
       rosterCount: dayRosters.length,
