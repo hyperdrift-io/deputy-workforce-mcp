@@ -37,7 +37,7 @@ manager can act on.
 ### Timesheet exceptions
 
 ```json
-{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "kind": "start_time_variance", "roster_id": 1002, "minutes": 22, "tolerance_minutes": 15, "rule": "timesheet start differs from roster beyond tolerance" }], "limits": [] }
+{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "kind": "start_time_variance", "roster_id": 1002, "minutes": 22, "tolerance_minutes": 15, "sources": [{ "resource": "Roster", "id": 1002 }, { "resource": "Timesheet", "id": 2002 }], "rule": "timesheet start differs from roster beyond tolerance" }], "limits": [] }
 ```
 
 ### Availability conflicts
