@@ -31,7 +31,7 @@ manager can act on.
 ### Overtime risk
 
 ```json
-{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "worker_id": 7, "planned_hours": 43.5, "threshold_hours": 40, "rule": "completed plus remaining rostered hours exceeds threshold" }], "limits": [] }
+{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "worker_id": 7, "planned_hours": 43.5, "threshold_hours": 40, "sources": [{ "resource": "Timesheet", "id": 2007 }, { "resource": "Roster", "id": 1007 }], "rule": "completed plus remaining rostered hours exceeds threshold" }], "limits": [] }
 ```
 
 ### Timesheet exceptions
@@ -49,7 +49,7 @@ manager can act on.
 ### Staffing summary
 
 ```json
-{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "location": "North", "day": "2026-07-21", "rostered_hours": 16, "completed_hours": 12, "assigned": 3, "unassigned": 1, "rule": "group roster and timesheet hours by location and local day" }], "limits": [] }
+{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "location": "North", "day": "2026-07-21", "rostered_hours": 16, "completed_hours": 12, "assigned": 3, "unassigned": 1, "sources": [{ "resource": "Roster", "id": 1008 }, { "resource": "Timesheet", "id": 2008 }], "rule": "group roster and timesheet hours by location and local day" }], "limits": [] }
 ```
 
 Every finding names its period, source record identifiers, and the rule or threshold that produced
