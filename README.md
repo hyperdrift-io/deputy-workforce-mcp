@@ -13,28 +13,43 @@ operational workflows for AI assistants.
 
 The tools answer those questions directly instead of exposing Deputy's endpoint catalogue.
 
-## Representative result
+## Representative results
+
+The examples below use fictional records and compact the structured response to the fields a
+manager can act on.
+
+### Coverage gaps
 
 ```json
 {
-  "period": {
-    "start": "2026-07-20T00:00:00.000Z",
-    "end": "2026-07-27T00:00:00.000Z",
-    "timezone": "Europe/London"
-  },
-  "findings": [
-    {
-      "kind": "recorded_unavailability_conflict",
-      "summary": "This roster overlaps a recorded unavailability window.",
-      "sources": [
-        { "resource": "Roster", "id": 1002 },
-        { "resource": "EmployeeAvailability", "id": 4001 }
-      ],
-      "rule": "roster interval overlaps recorded unavailability"
-    }
-  ],
+  "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" },
+  "findings": [{ "kind": "coverage_gap", "sources": [{ "resource": "Roster", "id": 1001 }], "rule": "active roster has fewer than 2 people" }],
   "limits": []
 }
+```
+
+### Overtime risk
+
+```json
+{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "worker_id": 7, "planned_hours": 43.5, "threshold_hours": 40, "rule": "completed plus remaining rostered hours exceeds threshold" }], "limits": [] }
+```
+
+### Timesheet exceptions
+
+```json
+{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "kind": "start_time_variance", "roster_id": 1002, "minutes": 22, "tolerance_minutes": 15, "rule": "timesheet start differs from roster beyond tolerance" }], "limits": [] }
+```
+
+### Availability conflicts
+
+```json
+{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "kind": "recorded_unavailability_conflict", "sources": [{ "resource": "Roster", "id": 1002 }, { "resource": "EmployeeAvailability", "id": 4001 }], "rule": "roster interval overlaps recorded unavailability" }], "limits": [] }
+```
+
+### Staffing summary
+
+```json
+{ "period": { "start": "2026-07-20", "end": "2026-07-26", "timezone": "Europe/London" }, "findings": [{ "location": "North", "day": "2026-07-21", "rostered_hours": 16, "completed_hours": 12, "assigned": 3, "unassigned": 1, "rule": "group roster and timesheet hours by location and local day" }], "limits": [] }
 ```
 
 Every finding names its period, source record identifiers, and the rule or threshold that produced

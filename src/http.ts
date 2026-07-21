@@ -85,7 +85,6 @@ const server = createServer((request, response) => {
 
 server.listen(config.port, "127.0.0.1", () => {
   process.stderr.write(`${JSON.stringify({
-    occurred_at: new Date().toISOString(),
     event: "http_listening",
     service: "deputy-workforce-mcp",
     port: config.port,
