@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@hyperdrift-io/mcp-service-kit':
+        specifier: ^0.1.2
+        version: 0.1.2(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
@@ -188,6 +191,12 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
+
+  '@hyperdrift-io/mcp-service-kit@0.1.2':
+    resolution: {integrity: sha512-eSvMmt/ysXwK07i9IHbnDJp53UqcDFhcy1O5rmrGhzl7O1kWuAA08xz5ocb1byo/8Q5HpRxYKcHpPVN0/wZTbw==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@modelcontextprotocol/sdk': ^1.29.0
 
   '@modelcontextprotocol/sdk@1.29.0':
     resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
@@ -782,6 +791,10 @@ snapshots:
   '@hono/node-server@1.19.14(hono@4.12.30)':
     dependencies:
       hono: 4.12.30
+
+  '@hyperdrift-io/mcp-service-kit@0.1.2(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
 
   '@modelcontextprotocol/sdk@1.29.0(zod@4.4.3)':
     dependencies:

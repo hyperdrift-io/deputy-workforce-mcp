@@ -1,4 +1,5 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { structuredToolResult } from "@hyperdrift-io/mcp-service-kit/results";
 import { DeputyGatewayError } from "../deputy/client.js";
 import type { OperationalFinding, ToolResult } from "../types.js";
 
@@ -12,16 +13,17 @@ export class EnablingToolError extends Error {
 export function successfulResult(result: ToolResult): CallToolResult {
   const detail = result.findings.slice(0, 10).map((finding) => `- ${finding.summary}`).join("\n");
   const limitText = result.limits.length ? `\n\nLimits:\n${result.limits.map((limit) => `- ${limit}`).join("\n")}` : "";
-  return {
-    content: [{ type: "text", text: `${result.summary}${detail ? `\n\n${detail}` : ""}${limitText}` }],
-    structuredContent: {
-      period: result.period,
-      timezone: result.period.timezone,
-      findings: result.findings,
-      sources: result.sources,
-      limits: result.limits,
-    },
+  const structured = {
+    period: result.period,
+    timezone: result.period.timezone,
+    findings: result.findings,
+    sources: result.sources,
+    limits: result.limits,
   };
+  return structuredToolResult(
+    structured,
+    () => `${result.summary}${detail ? `\n\n${detail}` : ""}${limitText}`,
+  );
 }
 export function enablingError(error: unknown): CallToolResult {
   const message = error instanceof DeputyGatewayError || error instanceof EnablingToolError

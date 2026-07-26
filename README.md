@@ -62,6 +62,8 @@ it. Empty data gives a confidence limit rather than a false all-clear.
 - Workload thresholds are operational planning signals, not payroll, employment, or legal advice.
 - Telemetry excludes tool arguments, employee and location IDs, dates, result content, and tokens.
 - V1 is single-tenant by deployment: one Deputy installation and one MCP bearer token per instance.
+- Authentication, bounded HTTP transport, rate limiting, structured results, and stdio lifecycle
+  use MCP Maker's shared `@hyperdrift-io/mcp-service-kit`; Deputy keeps its provider and workflow logic.
 
 See [SECURITY.md](SECURITY.md) and [PRIVACY.md](PRIVACY.md) for the complete contracts.
 

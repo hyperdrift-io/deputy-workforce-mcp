@@ -21,8 +21,10 @@ not implement a rejected direction without founder approval.
 - Keep the deployment boundary single-tenant until paid demand justifies another model.
 - Support local stdio and authenticated remote streamable HTTP from the same tool definitions.
 - Use Node.js 22, strict TypeScript ESM, pnpm, and `.js` relative import suffixes.
-- Runtime dependencies are limited to `@modelcontextprotocol/sdk` and `zod` unless the founder
-  approves a change.
+- Shared transport and safety primitives come from `@hyperdrift-io/mcp-service-kit`; provider contracts,
+  workflows, configuration, and Deputy's stricter no-date telemetry stay in this repository.
+- Runtime dependencies are limited to `@modelcontextprotocol/sdk`, `@hyperdrift-io/mcp-service-kit`, and
+  `zod` unless the founder approves a change.
 - During prototype discovery, verify with install, type-check, build, security scan, Deputy
   sandbox exercises, and manual MCP protocol checks. Do not add automated product test suites
   until the direction is declared stable.

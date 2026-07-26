@@ -21,6 +21,7 @@ Telemetry records only:
 - tool name and fixture/live mode;
 - MCP client name and version;
 - duration, success/error outcome, and result count.
+- service lifecycle events with local bind host/port or shutdown signal.
 
 Telemetry never includes tool arguments, employee or location IDs, query dates, result content,
 Deputy response bodies, or credentials.

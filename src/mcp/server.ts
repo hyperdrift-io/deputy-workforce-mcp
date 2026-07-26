@@ -74,8 +74,7 @@ async function callTool(
   const started = performance.now();
   try {
     const result = await operation();
-    emitTelemetry({
-      event: "mcp_tool_called",
+    emitTelemetry("mcp_tool_called", {
       mode: context.mode,
       tool,
       ...clientInfo(server),
@@ -85,8 +84,7 @@ async function callTool(
     });
     return successfulResult(result);
   } catch (error) {
-    emitTelemetry({
-      event: "mcp_tool_called",
+    emitTelemetry("mcp_tool_called", {
       mode: context.mode,
       tool,
       ...clientInfo(server),
@@ -104,7 +102,7 @@ export function createMcpServer(context: McpContext): McpServer {
     version: "0.1.0",
   });
 
-  emitTelemetry({ event: "mcp_initialized", mode: context.mode });
+  emitTelemetry("mcp_initialized", { mode: context.mode });
 
   server.registerTool(
     "find_coverage_gaps",
