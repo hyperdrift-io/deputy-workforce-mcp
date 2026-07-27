@@ -79,6 +79,13 @@ DEPUTY_MODE=fixture pnpm dlx @hyperdrift-io/deputy-workforce-mcp@latest
 ```
 
 For a visible tool-list and tool-call proof, see [the fixture demonstration](docs/FIXTURE_DEMO.md).
+The package is also distributed through the official MCP Registry and as a one-file MCP Bundle on
+Smithery. Maintainers can reproduce the local bundle with:
+
+```bash
+pnpm mcpb:pack
+```
+
 To work from source:
 
 ```bash
