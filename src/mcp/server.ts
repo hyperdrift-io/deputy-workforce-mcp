@@ -11,10 +11,16 @@ import { summariseStaffing } from "../workflows/staffing.js";
 import { listTimesheetExceptions } from "../workflows/timesheets.js";
 import { enablingError, EnablingToolError, successfulResult } from "./results.js";
 import { emitTelemetry } from "./telemetry.js";
+import { instrumentMcpAnalytics } from "./analytics.js";
+import type { Config, TransportKind } from "../config.js";
 
 export interface McpContext {
   gateway: DeputyGateway;
   mode: DeputyMode;
+  analytics?: {
+    config: Config;
+    transport: TransportKind;
+  };
 }
 const annotations = {
   readOnlyHint: true,
@@ -201,6 +207,10 @@ export function createMcpServer(context: McpContext): McpServer {
       }, context.gateway),
     ),
   );
+
+  if (context.analytics) {
+    instrumentMcpAnalytics(server, context.analytics.config, context.analytics.transport);
+  }
 
   return server;
 }

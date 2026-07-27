@@ -1,5 +1,5 @@
 {
-  "name": "@hyperdrift/deputy-workforce-mcp",
+  "name": "@hyperdrift-io/deputy-workforce-mcp",
   "version": "0.1.0",
   "description": "Read-only workforce operations MCP for Deputy",
   "mcpName": "io.github.hyperdrift-io/deputy-workforce-mcp",
@@ -33,11 +33,16 @@
     "build": "tsc -p tsconfig.build.json",
     "type-check": "tsc --noEmit",
     "start": "node dist/http.js",
+    "proof:fixture": "node scripts/fixture-proof.mjs",
+    "proof:published": "node scripts/fixture-proof.mjs --published",
+    "test:telemetry": "node scripts/telemetry-contract.mjs",
     "security:scan": "gitleaks detect --source . --redact"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
     "@hyperdrift-io/mcp-service-kit": "^0.1.2",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@posthog/mcp": "^0.10.1",
+    "posthog-node": "^5.46.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

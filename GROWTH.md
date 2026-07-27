@@ -16,6 +16,9 @@ workforce answers inside an AI assistant without granting it mutation access.
 
 | Event | Meaning | Required properties |
 | --- | --- | --- |
+| `$mcp_initialize` | A client starts an anonymous MCP session | `delivery_id`, `deputy_mode`, `transport`, standard allowlisted MCP properties |
+| `$mcp_tools_list` | A client inspects the five-tool surface | `delivery_id`, `deputy_mode`, `transport`, standard allowlisted MCP properties |
+| `$mcp_tool_call` | A client invokes one curated workflow | `delivery_id`, `deputy_mode`, `transport`, standard allowlisted MCP properties |
 | `useful_tool_call` | Activation: a curated workflow returns a usable grounded result | `delivery_id`, `tool_name`, `transport`, `result_status`, `duration_ms` |
 | `managed_deployment_enquiry` | Commercial handoff: an organisation asks Hyperdrift to deploy or adapt the MCP | `delivery_id`, `source`, `requested_scope` |
 | `paid_mcp_delivery` | MCP Maker revenue: a paid delivery is agreed | `delivery_id`, `service_tier`, `currency`, `amount` |
@@ -34,4 +37,3 @@ tokens in growth events.
 
 The flagship succeeds when it produces verified useful tool calls, a qualified managed-deployment
 enquiry, and the first `paid_mcp_delivery` for MCP Maker.
-

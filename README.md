@@ -61,6 +61,8 @@ it. Empty data gives a confidence limit rather than a false all-clear.
 - The server never creates or changes shifts, timesheets, leave, payroll, or employee data.
 - Workload thresholds are operational planning signals, not payroll, employment, or legal advice.
 - Telemetry excludes tool arguments, employee and location IDs, dates, result content, and tokens.
+- Standard MCP analytics are disabled unless the deployment owner provides a PostHog project token;
+  the privacy allowlist is documented in [PRIVACY.md](PRIVACY.md).
 - V1 is single-tenant by deployment: one Deputy installation and one MCP bearer token per instance.
 - Authentication, bounded HTTP transport, rate limiting, structured results, and stdio lifecycle
   use MCP Maker's shared `@hyperdrift-io/mcp-service-kit`; Deputy keeps its provider and workflow logic.
@@ -69,7 +71,15 @@ See [SECURITY.md](SECURITY.md) and [PRIVACY.md](PRIVACY.md) for the complete con
 
 ## Local installation
 
-Node.js 22 and pnpm are required.
+Node.js 22 and pnpm are required. The quickest safe inspection uses the public package and
+fictional fixture data:
+
+```bash
+DEPUTY_MODE=fixture pnpm dlx @hyperdrift-io/deputy-workforce-mcp@latest
+```
+
+For a visible tool-list and tool-call proof, see [the fixture demonstration](docs/FIXTURE_DEMO.md).
+To work from source:
 
 ```bash
 git clone https://github.com/hyperdrift-io/deputy-workforce-mcp.git

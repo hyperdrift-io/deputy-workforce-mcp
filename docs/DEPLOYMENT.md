@@ -15,6 +15,8 @@ for multiple customers.
 | `DEPUTY_AUTH_SCHEME` | `Bearer` | `Bearer` | Verified OAuth request scheme |
 | `MCP_BEARER_TOKEN` | Required for HTTP | Required for HTTP | At least 32 random bytes |
 | `PORT` | `3013` | Operator choice | Loopback listener port |
+| `POSTHOG_PROJECT_TOKEN` | Optional | Optional | Enables privacy-allowlisted standard MCP analytics |
+| `POSTHOG_HOST` | EU ingest | Operator choice | PostHog ingest host owned by the deployment operator |
 
 ## Production shape
 
@@ -25,7 +27,8 @@ for multiple customers.
 3. Run `node dist/http.js` as an unprivileged service bound to loopback.
 4. Terminate TLS and apply public-network controls at a maintained reverse proxy.
 5. Expose `/health` to internal monitoring and require bearer authentication for `/mcp`.
-6. Keep logs on stderr and configure an explicit retention period.
+6. Keep logs on stderr and configure an explicit retention period. If PostHog is enabled, verify
+   the project and retention policy belong to the deployment owner.
 7. Rotate credentials and redeploy after any secret change.
 
 ## Readiness checks

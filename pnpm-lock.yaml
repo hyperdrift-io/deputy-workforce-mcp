@@ -14,6 +14,12 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
+      '@posthog/mcp':
+        specifier: ^0.10.1
+        version: 0.10.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(posthog-node@5.46.1)
+      posthog-node:
+        specifier: ^5.46.1
+        version: 5.46.1
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -207,6 +213,19 @@ packages:
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
+
+  '@posthog/core@1.45.1':
+    resolution: {integrity: sha512-tLtvzomavb2PPWdGYKsusyIzIeL2Px47v348Smibkay7sMy/83TyPk+Ptsp2NdeOgJsbuwSxWkR2+XA0aSCAaA==}
+
+  '@posthog/mcp@0.10.1':
+    resolution: {integrity: sha512-TMe6BvDCzMMaWP30jMuJKWDbqrDZ6xLjknzQFGXkaD5EPiq4EcU8FImjZBSZ6l1ipQdnPmkx2Z+R4bKhlx9Z6A==}
+    engines: {node: ^20.20.0 || >=22.22.0}
+    peerDependencies:
+      '@modelcontextprotocol/sdk': '>=1.26.0'
+      posthog-node: ^5.0.0
+
+  '@posthog/types@1.398.0':
+    resolution: {integrity: sha512-sJMkl4k+u8yS/0fjHsKqE9xTdsAh30a2WvgChiptellnVoE0e8QJKFgqOMD2sk8FaEArPdeFklAhXvmENAt3Sg==}
 
   '@types/node@22.20.1':
     resolution: {integrity: sha512-EANqOCF9QFyra+4pfxUcX9STKJpCLjMbObVzljIJomAWSnuSIEAvyzEU53GaajbXJEgdh0iEcPL+DGvpUd4k1Q==}
@@ -597,6 +616,15 @@ packages:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
     engines: {node: '>=16.20.0'}
 
+  posthog-node@5.46.1:
+    resolution: {integrity: sha512-WjCqExq44pBdyg9MSsH6UAE0tNZ88p4aIuVFicgqhjf2Fbws6IhS4ioYUa4aBrbUPS9EDRXtBTtF5DpP1ml8Pw==}
+    engines: {node: ^20.20.0 || >=22.22.0}
+    peerDependencies:
+      rxjs: ^7.0.0
+    peerDependenciesMeta:
+      rxjs:
+        optional: true
+
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -817,6 +845,18 @@ snapshots:
       zod-to-json-schema: 3.25.2(zod@4.4.3)
     transitivePeerDependencies:
       - supports-color
+
+  '@posthog/core@1.45.1':
+    dependencies:
+      '@posthog/types': 1.398.0
+
+  '@posthog/mcp@0.10.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(posthog-node@5.46.1)':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
+      '@posthog/core': 1.45.1
+      posthog-node: 5.46.1
+
+  '@posthog/types@1.398.0': {}
 
   '@types/node@22.20.1':
     dependencies:
@@ -1164,6 +1204,10 @@ snapshots:
   path-to-regexp@8.4.2: {}
 
   pkce-challenge@5.0.1: {}
+
+  posthog-node@5.46.1:
+    dependencies:
+      '@posthog/core': 1.45.1
 
   proxy-addr@2.0.7:
     dependencies:

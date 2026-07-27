@@ -11,6 +11,8 @@ export interface Config {
   mcpBearerToken?: string;
   mcpPublicBaseUrl: string;
   logLevel: "debug" | "info" | "warn" | "error";
+  posthogProjectToken?: string;
+  posthogHost: string;
 }
 
 function optionalValue(value: string | undefined): string | undefined {
@@ -43,6 +45,7 @@ export function loadConfig(
   const deputyBaseUrl = optionalValue(env.DEPUTY_BASE_URL)?.replace(/\/$/, "");
   const deputyAccessToken = optionalValue(env.DEPUTY_ACCESS_TOKEN);
   const mcpBearerToken = optionalValue(env.MCP_BEARER_TOKEN);
+  const posthogProjectToken = optionalValue(env.POSTHOG_PROJECT_TOKEN);
 
   if (deputyMode === "live" && (!deputyBaseUrl || !deputyAccessToken)) {
     throw new Error(
@@ -78,5 +81,7 @@ export function loadConfig(
     ...(mcpBearerToken ? { mcpBearerToken } : {}),
     mcpPublicBaseUrl: env.MCP_PUBLIC_BASE_URL ?? "http://127.0.0.1:3013",
     logLevel,
+    ...(posthogProjectToken ? { posthogProjectToken } : {}),
+    posthogHost: env.POSTHOG_HOST?.trim() || "https://eu.i.posthog.com",
   };
 }
