@@ -4,3 +4,5 @@ dist/
 .env.local
 .firecrawl/
 *.log
+
+.worktrees/
