@@ -1,0 +1,18 @@
+{
+  "verified_at": "2026-07-27T21:47:00Z",
+  "package": "@hyperdrift-io/deputy-workforce-mcp@0.1.0",
+  "dist_integrity": "sha512-65QkXigZMByvCJw4ye+nX0FVNpprHdHQcmkSIRlmpGuJKqasf/FLvuYaCqWpYibG11wlULpyTUpqQvwtm6ptdA==",
+  "anonymous_registry_access": true,
+  "fixture_only": true,
+  "tool_count": 5,
+  "tools": [
+    "find_coverage_gaps",
+    "flag_overtime_risk",
+    "list_timesheet_exceptions",
+    "find_availability_conflicts",
+    "summarise_staffing"
+  ],
+  "called": "find_coverage_gaps",
+  "finding_count": 8,
+  "is_error": false
+}
