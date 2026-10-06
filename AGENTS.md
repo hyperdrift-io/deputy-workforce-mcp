@@ -20,7 +20,7 @@ not implement a rejected direction without founder approval.
 - Do not emit names, emails, pay rates, free-text comments, or credentials in telemetry.
 - Keep the deployment boundary single-tenant until paid demand justifies another model.
 - Support local stdio and authenticated remote streamable HTTP from the same tool definitions.
-- Use Node.js 22, strict TypeScript ESM, pnpm, and `.js` relative import suffixes.
+- Use Node.js 22, strict TypeScript ESM, npm, and `.js` relative import suffixes.
 - Shared transport and safety primitives come from `@hyperdrift-io/mcp-service-kit`; provider contracts,
   workflows, configuration, and Deputy's stricter no-date telemetry stay in this repository.
 - Runtime dependencies are limited to `@modelcontextprotocol/sdk`, `@hyperdrift-io/mcp-service-kit`, and

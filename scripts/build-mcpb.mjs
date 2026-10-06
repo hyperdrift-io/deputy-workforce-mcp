@@ -12,7 +12,7 @@ rmSync(output, { force: true });
 mkdirSync(stage, { recursive: true });
 
 try {
-  for (const source of ["package.json", "pnpm-lock.yaml"]) {
+  for (const source of ["package.json", "package-lock.json"]) {
     cpSync(join(root, source), join(stage, source));
   }
   cpSync(join(root, "dist"), join(stage, "dist"), {
@@ -21,16 +21,15 @@ try {
   });
   cpSync(join(root, "mcpb", "manifest.json"), join(stage, "manifest.json"));
 
-  execFileSync("pnpm", [
-    "install",
-    "--dir",
-    stage,
-    "--prod",
-    "--frozen-lockfile",
-    "--node-linker=hoisted",
-  ], { stdio: "inherit" });
-  execFileSync("pnpm", [
-    "dlx",
+  execFileSync("npm", [
+    "ci",
+    "--omit=dev",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+  ], { cwd: stage, stdio: "inherit" });
+  execFileSync("npx", [
+    "--yes",
     "@anthropic-ai/mcpb@2.1.2",
     "pack",
     stage,

@@ -71,11 +71,11 @@ See [SECURITY.md](SECURITY.md) and [PRIVACY.md](PRIVACY.md) for the complete con
 
 ## Local installation
 
-Node.js 22 and pnpm are required. The quickest safe inspection uses the public package and
-fictional fixture data:
+Node.js 22 or later is required; npm ships with it. The quickest safe inspection uses the public
+package and fictional fixture data:
 
 ```bash
-DEPUTY_MODE=fixture pnpm dlx @hyperdrift-io/deputy-workforce-mcp@latest
+DEPUTY_MODE=fixture npx -y @hyperdrift-io/deputy-workforce-mcp@latest
 ```
 
 For a visible tool-list and tool-call proof, see [the fixture demonstration](docs/FIXTURE_DEMO.md).
@@ -83,7 +83,7 @@ The package is also distributed through the official MCP Registry and as a one-f
 Smithery. Maintainers can reproduce the local bundle with:
 
 ```bash
-pnpm mcpb:pack
+npm run mcpb:pack
 ```
 
 To work from source:
@@ -91,8 +91,8 @@ To work from source:
 ```bash
 git clone https://github.com/hyperdrift-io/deputy-workforce-mcp.git
 cd deputy-workforce-mcp
-pnpm install
-pnpm build
+npm install
+npm run build
 DEPUTY_MODE=fixture node dist/stdio.js
 ```
 
@@ -125,7 +125,7 @@ bounded in-memory rate protection.
 DEPUTY_MODE=fixture \
 MCP_BEARER_TOKEN="replace-with-at-least-32-random-bytes" \
 PORT=3013 \
-pnpm start
+npm start
 ```
 
 - Health: `GET /health`

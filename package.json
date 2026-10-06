@@ -26,14 +26,13 @@
   "bugs": {
     "url": "https://github.com/hyperdrift-io/deputy-workforce-mcp/issues"
   },
-  "packageManager": "pnpm@10.13.1",
   "scripts": {
     "dev": "tsx watch src/http.ts",
     "mcp": "tsx src/stdio.ts",
     "build": "tsc -p tsconfig.build.json",
     "type-check": "tsc --noEmit",
     "start": "node dist/http.js",
-    "mcpb:pack": "pnpm build && node scripts/build-mcpb.mjs",
+    "mcpb:pack": "npm run build && node scripts/build-mcpb.mjs",
     "proof:fixture": "node scripts/fixture-proof.mjs",
     "proof:published": "node scripts/fixture-proof.mjs --published",
     "test:telemetry": "node scripts/telemetry-contract.mjs",

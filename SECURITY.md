@@ -28,6 +28,6 @@ access tokens, employee data, or customer installation details in a public issue
 - Rotate both tokens after personnel changes, suspected exposure, or handoff between operators.
 - Terminate TLS at a maintained reverse proxy and keep `/mcp` off the public internet when remote
   access is unnecessary.
-- Run `pnpm security:scan` and review dependency advisories before each production release.
+- Run `npm run security:scan` and review dependency advisories before each production release.
 
 Security fixes that would change the read-only boundary require explicit founder review.

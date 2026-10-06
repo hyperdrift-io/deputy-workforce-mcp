@@ -22,8 +22,7 @@ for multiple customers.
 
 1. Store secrets in the deployment secret manager, never in the repository or process command
    history.
-2. Run `pnpm install --frozen-lockfile`, `pnpm type-check`, `pnpm build`, and
-   `pnpm security:scan`.
+2. Run `npm ci`, `npm run type-check`, `npm run build`, and `npm run security:scan`.
 3. Run `node dist/http.js` as an unprivileged service bound to loopback.
 4. Terminate TLS and apply public-network controls at a maintained reverse proxy.
 5. Expose `/health` to internal monitoring and require bearer authentication for `/mcp`.

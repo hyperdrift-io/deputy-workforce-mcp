@@ -6,9 +6,9 @@ customer or employee data.
 ## Run the repository build
 
 ```bash
-pnpm install
-pnpm build
-pnpm proof:fixture
+npm install
+npm run build
+npm run proof:fixture
 ```
 
 ## Verify the public package
@@ -17,7 +17,7 @@ After publication, this command starts the public npm package in fixture mode, l
 calls `find_coverage_gaps`, and prints only proof metadata:
 
 ```bash
-pnpm proof:published
+npm run proof:published
 ```
 
 Expected shape:

@@ -6,8 +6,8 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const published = process.argv.includes("--published");
 const transport = published
   ? new StdioClientTransport({
-      command: "pnpm",
-      args: ["dlx", "@hyperdrift-io/deputy-workforce-mcp@latest"],
+      command: "npx",
+      args: ["--yes", "@hyperdrift-io/deputy-workforce-mcp@latest"],
       env: { ...process.env, DEPUTY_MODE: "fixture" },
       stderr: "pipe",
     })
