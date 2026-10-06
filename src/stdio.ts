@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { runStdioServer } from "@hyperdrift-io/mcp-service-kit/stdio";
 import { loadConfig } from "./config.js";
 import { createDeputyGateway } from "./deputy/gateway.js";
