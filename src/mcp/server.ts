@@ -103,10 +103,20 @@ async function callTool(
 }
 
 export function createMcpServer(context: McpContext): McpServer {
-  const server = new McpServer({
-    name: "deputy-workforce-mcp",
-    version: "0.1.0",
-  });
+  const server = new McpServer(
+    {
+      name: "deputy-workforce-mcp",
+      version: "0.1.0",
+    },
+    {
+      // GHSA-46jr-4wx8-v453: unset, the SDK validates an unbounded number of
+      // tool-input elements. The only array input is location_ids, capped at
+      // 50 by its schema, so the largest legitimate call counts 55 elements
+      // (five argument keys plus fifty ids); 2,000 is ~36x that and still only
+      // ~8 KB, far below the 1 MiB body limit of the HTTP front.
+      maxToolInputElements: 2_000,
+    },
+  );
 
   emitTelemetry("mcp_initialized", { mode: context.mode });
 
